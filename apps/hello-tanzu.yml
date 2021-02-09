@@ -1,0 +1,73 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ domain_name = data.values.hello_tanzu.external_url.replace("http://", "").replace("https://", "")
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-tanzu
+  name: hello-tanzu
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-tanzu
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: hello-tanzu
+    spec:
+      containers:
+      - image: ghcr.io/making/hello-tanzu
+        name: hello-tanzu
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: hello-tanzu
+  name: hello-tanzu
+  namespace: demo
+spec:
+  ports:
+  - name: "8080"
+    port: 8080
+  selector:
+    app: hello-tanzu
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-tanzu
+  namespace: demo
+  annotations:
+    cert-manager.io/cluster-issuer: #@ data.values.cluster_issuer_name
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+  - secretName: #@ "{}-tls".format(domain_name.replace(".", "-"))
+    hosts:
+    - #@ domain_name
+  rules:
+  - host: #@ domain_name
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hello-tanzu
+            port:
+              number: 8080

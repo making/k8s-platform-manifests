@@ -1,0 +1,84 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:overlay", "overlay")
+#@ domain_name = data.values.zipkin.external_url.replace("http://", "").replace("https://", "")
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: zipkin
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: zipkin
+  name: zipkin
+  namespace: zipkin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zipkin
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: zipkin
+    spec:
+      containers:
+      - image: ghcr.io/openzipkin/zipkin-slim
+        name: zipkin
+        env:
+        - name: MEM_MAX_SPANS
+          value: "10000"
+        readinessProbe:
+          httpGet:
+            port: 9411
+            path: /actuator/health
+        livenessProbe:
+          httpGet:
+            port: 9411
+            path: /actuator/info
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: zipkin
+  name: zipkin
+  namespace: zipkin
+spec:
+  ports:
+  - name: "9411"
+    port: 9411
+  selector:
+    app: zipkin
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zipkin
+  namespace: zipkin
+  annotations:
+    cert-manager.io/cluster-issuer: #@ data.values.cluster_issuer_name
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+  - secretName: #@ "{}-tls".format(domain_name.replace(".", "-"))
+    hosts:
+    - #@ domain_name
+  rules:
+  - host: #@ domain_name
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: zipkin
+            port:
+              number: 9411
