@@ -5,3 +5,12 @@
 ---
 #! Deployment => DaemonSet
 kind: DaemonSet
+spec:
+  template:
+    spec:
+      containers:
+      #@overlay/match by="name"
+      - name: controller
+        args:
+        #@overlay/append
+        - --enable-ssl-passthrough

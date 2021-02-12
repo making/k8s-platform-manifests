@@ -3,6 +3,12 @@ kind: Config
 directories:
 - path: vendor
   contents:
+  - path: argocd
+    helmChart:
+      name: argo-cd
+      version: 2.14.0
+      repository:
+        url: https://argoproj.github.io/argo-helm
   - path: ingress-nginx
     git:
       url: https://github.com/kubernetes/ingress-nginx

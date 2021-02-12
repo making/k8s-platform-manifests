@@ -1,6 +1,10 @@
 apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
+  - helmChart:
+      appVersion: 1.8.4
+      version: 2.14.0
+    path: argocd
   - git:
       commitTitle: Release v0.44.0
       sha: 59922afae3331ee76e44dd93f26c6ea0b2309986

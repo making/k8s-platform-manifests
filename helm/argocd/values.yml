@@ -1,0 +1,19 @@
+server:
+  config:
+    url: https://argocd.orange.maki.lol
+  extraArgs:
+  - --insecure
+  ingress:
+    enabled: true
+    hosts:
+    - argocd.orange.maki.lol
+    https: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-maki-lol
+      kubernetes.io/tls-acme: "true"
+      ingress.kubernetes.io/force-ssl-redirect: "true"
+      #nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    tls:
+    - secretName: argocd-orange-maki-lol-tls
+      hosts:
+      - argocd.orange.maki.lol

@@ -1,0 +1,14 @@
+#@ load("@ytt:overlay", "overlay")
+#@ load("@ytt:library", "library")
+#@ load("@ytt:template", "template")
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+
+#@overlay/match by=overlay.not_op(overlay.subset({"kind": "Namespace"})), expects="1+"
+---
+metadata:
+  #@overlay/match missing_ok=True
+  namespace: argocd
