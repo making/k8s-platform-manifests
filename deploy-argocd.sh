@@ -8,6 +8,8 @@ kapp deploy -a argocd \
                               argocd $(dirname $0)/vendor/argocd \
                   | ytt --ignore-unknown-comments \
                         -f - \
-                        -f $(dirname $0)/ytt/argocd) \
+                        -f $(dirname $0)/ytt/argocd \
+                        -f $(dirname $0)/credentials.yml) \
             -c \
+             --diff-mask=false \
             $@
