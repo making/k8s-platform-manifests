@@ -1,0 +1,28 @@
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.subset({"kind":"ConfigMap","metadata":{"name":"argocd-cm"}})
+#@overlay/match-child-defaults missing_ok=True
+---
+data:
+  configManagementPlugins: |
+    - name: bash
+      generate:
+        command:
+        - /bin/bash
+        - -ce
+        args:
+        - |
+          ./generate
+    - name: ytt
+      generate:
+        command:
+        - /bin/bash
+        - -ce
+        args:
+        - |
+          ytt --ignore-unknown-comments=true \
+              -f ${BASE_DIR:-../base}  \
+              -f . \
+              --data-values-env YTT_ \
+              --data-values-env-yaml YTT_YAML_ \
+              | kbld -f -

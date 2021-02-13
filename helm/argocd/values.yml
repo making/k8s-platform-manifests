@@ -1,12 +1,12 @@
 server:
   config:
-    url: https://argocd.orange.maki.lol
+    url: https://argo.orange.maki.lol
   extraArgs:
   - --insecure
   ingress:
     enabled: true
     hosts:
-    - argocd.orange.maki.lol
+    - argo.orange.maki.lol
     https: true
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-maki-lol
@@ -16,4 +16,4 @@ server:
     tls:
     - secretName: argocd-orange-maki-lol-tls
       hosts:
-      - argocd.orange.maki.lol
+      - argo.orange.maki.lol

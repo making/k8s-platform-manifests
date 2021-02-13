@@ -1,0 +1,63 @@
+#@ load("@ytt:overlay", "overlay")
+
+#@overlay/match by=overlay.subset({"kind":"Deployment","metadata":{"name":"argocd-repo-server"}})
+---
+spec:
+  template:
+    spec:
+      volumes:
+      #@overlay/append
+      - name: carvel
+        emptyDir: {}
+      #@overlay/match missing_ok=True
+      initContainers:
+      #@overlay/append
+      - name: install-carvel
+        image: docker.io/k14s/image
+        command:
+        - bash
+        - -ce
+        args:
+        - |
+          mv `which ytt` ${K14SIO_INSTALL_BIN_DIR}
+          mv `which kapp` ${K14SIO_INSTALL_BIN_DIR}
+          mv `which kbld` ${K14SIO_INSTALL_BIN_DIR}
+          mv `which kwt` ${K14SIO_INSTALL_BIN_DIR}
+          mv `which imgpkg` ${K14SIO_INSTALL_BIN_DIR}
+          mv `which vendir` ${K14SIO_INSTALL_BIN_DIR}
+          # or if you want to install the latest carvel tools
+          # wget -O- https://carvel.dev/install.sh | bash
+        env:
+        - name: K14SIO_INSTALL_BIN_DIR
+          value: /carvel
+        volumeMounts:
+        - mountPath: /carvel
+          name: carvel
+      containers:
+      #@overlay/match by="name"
+      - name: repo-server
+        volumeMounts:
+        #@overlay/append
+        - mountPath: /usr/local/bin/ytt
+          name: carvel
+          subPath: ytt
+        #@overlay/append
+        - mountPath: /usr/local/bin/kapp
+          name: carvel
+          subPath: kapp
+        #@overlay/append
+        - mountPath: /usr/local/bin/kbld
+          name: carvel
+          subPath: kbld
+        #@overlay/append
+        - mountPath: /usr/local/bin/kwt
+          name: carvel
+          subPath: kwt
+        #@overlay/append
+        - mountPath: /usr/local/bin/imgpkg
+          name: carvel
+          subPath: imgpkg
+        #@overlay/append
+        - mountPath: /usr/local/bin/vendir
+          name: carvel
+          subPath: vendir
